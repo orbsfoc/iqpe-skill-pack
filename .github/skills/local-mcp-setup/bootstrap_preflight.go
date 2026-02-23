@@ -48,15 +48,31 @@ func nowUTC() string {
 	return time.Now().UTC().Format(time.RFC3339)
 }
 
-func resolveBinary() string {
+func resolveBinary(targetRoot string) string {
 	if path, err := exec.LookPath("iqpe-localmcp"); err == nil {
 		return path
+	}
+	if path, err := exec.LookPath("localmcp"); err == nil {
+		return path
+	}
+	if strings.TrimSpace(targetRoot) != "" {
+		candidates := []string{
+			filepath.Join(targetRoot, ".iqpe", "bin", "iqpe-localmcp"),
+			filepath.Join(targetRoot, ".iqpe", "bin", "localmcp"),
+		}
+		for _, candidate := range candidates {
+			if isExecutable(candidate) {
+				return candidate
+			}
+		}
 	}
 	home, err := os.UserHomeDir()
 	if err == nil {
 		candidates := []string{
 			filepath.Join(home, "bin", "iqpe-localmcp"),
+			filepath.Join(home, "bin", "localmcp"),
 			filepath.Join(home, ".local", "bin", "iqpe-localmcp"),
+			filepath.Join(home, ".local", "bin", "localmcp"),
 		}
 		for _, candidate := range candidates {
 			if isExecutable(candidate) {
@@ -65,6 +81,33 @@ func resolveBinary() string {
 		}
 	}
 	return "iqpe-localmcp"
+}
+
+func commandLooksLikeLocalMCP(command string) bool {
+	value := strings.ToLower(strings.TrimSpace(command))
+	return strings.Contains(value, "iqpe-localmcp") || strings.Contains(value, "localmcp")
+}
+
+func normalizeMCPConfigCommands(cfg *mcpConfig, resolvedBinary string) bool {
+	if cfg == nil || len(cfg.Servers) == 0 || strings.TrimSpace(resolvedBinary) == "" {
+		return false
+	}
+	updated := false
+	for name, server := range cfg.Servers {
+		if !strings.EqualFold(strings.TrimSpace(server.Transport), "stdio") {
+			continue
+		}
+		if !commandLooksLikeLocalMCP(server.Command) {
+			continue
+		}
+		if commandRunnable(server.Command) {
+			continue
+		}
+		server.Command = resolvedBinary
+		cfg.Servers[name] = server
+		updated = true
+	}
+	return updated
 }
 
 func isExecutable(path string) bool {
@@ -81,11 +124,24 @@ func ensureMCPConfig(targetRoot string) (string, error) {
 		return "", err
 	}
 	mcpPath := filepath.Join(vscodeDir, "mcp.json")
-	if _, err := os.Stat(mcpPath); err == nil {
+	if data, err := os.ReadFile(mcpPath); err == nil {
+		var cfg mcpConfig
+		if err := json.Unmarshal(data, &cfg); err == nil {
+			resolvedBinary := resolveBinary(targetRoot)
+			if normalizeMCPConfigCommands(&cfg, resolvedBinary) {
+				normalized, marshalErr := json.MarshalIndent(cfg, "", "  ")
+				if marshalErr != nil {
+					return "", marshalErr
+				}
+				if writeErr := os.WriteFile(mcpPath, append(normalized, '\n'), 0o644); writeErr != nil {
+					return "", writeErr
+				}
+			}
+		}
 		return mcpPath, nil
 	}
 
-	command := resolveBinary()
+	command := resolveBinary(targetRoot)
 	cfg := mcpConfig{Servers: map[string]mcpServer{
 		"repo-read-local": {
 			Transport: "stdio",
@@ -203,7 +259,7 @@ func runPreflight(targetRoot, specDirArg, mcpPath string) (string, error) {
 					continue
 				}
 				present++
-				if strings.Contains(strings.ToLower(server.Command), "iqpe-localmcp") {
+				if commandLooksLikeLocalMCP(server.Command) {
 					local++
 				}
 				if commandRunnable(server.Command) {

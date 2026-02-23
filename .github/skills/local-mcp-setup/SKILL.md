@@ -15,6 +15,10 @@ Run setup actions:
 
 Then verify `.vscode/mcp.json` is present in the target repo and proceed to bootstrap + preflight.
 
+Binary compatibility note (clean-laptop installs):
+- Some installers may place the runtime as `localmcp` instead of `iqpe-localmcp`.
+- Fallback bootstrap/preflight supports both names and can normalize unresolved local MCP commands in `.vscode/mcp.json` to a discovered executable path.
+
 Self-service fallback (no `run_action` client path):
 
 `go run ./.github/skills/local-mcp-setup/bootstrap_preflight.go --target-root <target_repo_root_abs_path> --spec-dir <spec_dir>`
