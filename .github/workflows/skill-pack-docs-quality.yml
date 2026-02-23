@@ -1,0 +1,24 @@
+name: skill-pack-docs-quality
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify required baseline docs
+        run: |
+          test -f README.md
+          test -f CHANGELOG.md
+          test -f OWNERS.md
+          test -f docs/README.md
+      - name: Verify extracted skill definitions
+        run: |
+          test -d .github/skills
+          test -f .github/skills/workflow-preflight-check/SKILL.md
+          test -f .github/skills/local-mcp-setup/SKILL.md
+          test -f .github/skills/docs-validation/SKILL.md

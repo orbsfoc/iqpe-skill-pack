@@ -1,0 +1,12 @@
+{
+  "authority_source": "ADR-POC-002 Approved Technology Baseline and Integration Policy",
+  "approval_owner": "platform_lead",
+  "approval_status": "APPROVED",
+  "decisions": {
+    "backend_runtime": "golang",
+    "frontend_framework": "react",
+    "persistent_engine": "postgres",
+    "migration_tool": "liquibase",
+    "redis_version": "7.4"
+  }
+}
