@@ -18,7 +18,8 @@ Use deterministic MCP actions to initialize workflow execution:
 	- `docs/data-architecture-decision.md`
 	- `docs/handoffs/routing-matrix.md`
 	- `docs/integration/compose-mode-decision.md`
-6. Continue with preflight checks before phase execution.
+6. Run `mcp.action.context_promotion_publish` with shared repo roots to publish reusable context automatically.
+7. Continue with preflight checks before phase execution.
 
 Service workspace scaffold includes starter repositories:
 - `repos/go-module-service`
@@ -32,5 +33,12 @@ Each starter repository is initialized with:
 - `docs/plans/`
 - `docs/current-state/`
 - `docs/diagrams/`
+
+Automated context promotion action:
+- `mcp.action.context_promotion_publish`
+- Required args for non-manual publish:
+	- `architecture_repo_root`
+	- `catalog_repo_root`
+	- optional `project_slug`
 
 If actions cannot be invoked in this client session, use another MCP-capable client connected to the same servers/skills and record that in evidence.
