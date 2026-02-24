@@ -1,7 +1,7 @@
 ---
 name: local-mcp-setup
 description: Install and configure local MCP runtime for this project using deterministic actions. Use before bootstrap and preflight in local demo mode.
-argument-hint: [target_root] [spec_dir]
+argument-hint: "target_root spec_dir"
 user-invokable: true
 disable-model-invocation: false
 ---
@@ -31,6 +31,13 @@ This generates:
 - `docs/tooling/bootstrap-report.md`
 - `docs/tooling/workflow-preflight.json`
 - `docs/tooling/spec-tech-detect.json`
+
+Planning behavior resolution (MCP-configurable):
+
+`go run ./.github/skills/local-mcp-setup/cmd/planning_behavior_resolve/main.go --target-root <target_repo_root_abs_path> --out docs/planning-behavior-resolution.md`
+
+Default profile fallback path is bundled locally:
+- `./.github/skills/local-mcp-setup/corporate-docs/planning-behavior-profile.yaml`
 
 `spec-tech-detect.json` merges `SPEC_DIR` detection with the installed corporate approved tech baseline file:
 - `./.github/skills/local-mcp-setup/corporate-approved-tech.json`

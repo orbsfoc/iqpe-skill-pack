@@ -1,0 +1,45 @@
+profile_id: planning-behavior-profile-v1
+status: APPROVED
+owner_role: principal_architect
+approval_owner: platform_lead
+approval_status: APPROVED
+
+topology:
+  default: dependency-driven
+  allowed_values:
+    - single-repo
+    - multi-repo
+  service_per_repo_best_practice: true
+  service_per_repo_exception_requires_adr: true
+
+contracts:
+  contract_first_required: true
+  require_openapi_for_http: true
+  ownership_required: true
+  versioning_policy_required: true
+
+workstreams:
+  split_steps_required: true
+  dependency_graph_required: true
+  concurrent_execution_allowed: true
+  execution_requires_dependency_satisfaction: true
+
+reviews:
+  code_review_feedback_loop_required: true
+  developer_remediation_response_required: true
+  coding_principles_required:
+    - SOLID
+    - DRY
+    - clear_naming
+    - explicit_error_handling
+    - testability
+
+integration:
+  orchestration_step_allowed: true
+  orchestration_requires_all_prerequisites_passed: true
+  integration_feedback_loop_required: true
+
+evidence:
+  planning_behavior_resolution_required: true
+  mcp_usage_evidence_required: true
+  ai_usage_metrics_required_when_available: true
