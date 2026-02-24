@@ -344,7 +344,7 @@ func runPreflight(targetRoot, specDirArg, mcpPath string) (string, error) {
 		if err := json.Unmarshal(data, &cfg); err != nil {
 			mcpParseError = err.Error()
 		} else {
-			required := []string{"repo-read-local", "docflow-actions-local"}
+			required := []string{"repo-read-local", "docflow-actions-local", "docs-graph-local", "policy-local"}
 			present := 0
 			local := 0
 			runnable := 0
