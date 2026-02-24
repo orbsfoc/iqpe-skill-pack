@@ -496,6 +496,7 @@ func runSpecTechDetect(targetRoot, specDirArg, corporateTechFile string) (string
 	backendMatchers := []keyword{{"golang", compile(`\bgo(lang)?\b`)}, {"node", compile(`\bnode(js)?\b`)}, {"java", compile(`\bjava\b`)}, {"dotnet", compile(`\.net|dotnet`)}}
 	frontendMatchers := []keyword{{"react", compile(`\breact\b`)}, {"vue", compile(`\bvue\b`)}, {"angular", compile(`\bangular\b`)}}
 	dbMatchers := []keyword{{"postgres", compile(`\bpostgres(ql)?\b`)}, {"sqlite", compile(`\bsqlite\b`)}, {"mysql", compile(`\bmysql\b`)}, {"mssql", compile(`\bms\s*sql|sql\s*server\b`)}}
+	cacheMatchers := []keyword{{"redis", compile(`\bredis\b`)}, {"memory", compile(`\bin-?memory\b|\bmemory\s+cache\b`)}, {"none", compile(`\bno\s+cache\b|\bwithout\s+cache\b`)}}
 	migrationMatchers := []keyword{{"flyway", compile(`\bflyway\b`)}, {"liquibase", compile(`\bliquibase\b`)}, {"golang-migrate", compile(`\bmigrate\b`)}}
 
 	findFirst := func(filePath, line string, lineNo int, patterns []keyword) *techDecisionCandidate {
@@ -507,7 +508,7 @@ func runSpecTechDetect(targetRoot, specDirArg, corporateTechFile string) (string
 		return nil
 	}
 
-	var backend, frontend, database, migration *techDecisionCandidate
+	var backend, frontend, database, cacheEngine, migration *techDecisionCandidate
 	allowedExt := map[string]bool{".md": true, ".yaml": true, ".yml": true, ".json": true, ".txt": true}
 
 	_ = filepath.WalkDir(specDir, func(path string, d os.DirEntry, err error) error {
@@ -538,10 +539,13 @@ func runSpecTechDetect(targetRoot, specDirArg, corporateTechFile string) (string
 			if database == nil {
 				database = findFirst(rel, text, lineNo, dbMatchers)
 			}
+			if cacheEngine == nil {
+				cacheEngine = findFirst(rel, text, lineNo, cacheMatchers)
+			}
 			if migration == nil {
 				migration = findFirst(rel, text, lineNo, migrationMatchers)
 			}
-			if backend != nil && frontend != nil && database != nil && migration != nil {
+			if backend != nil && frontend != nil && database != nil && cacheEngine != nil && migration != nil {
 				return io.EOF
 			}
 		}
@@ -559,6 +563,9 @@ func runSpecTechDetect(targetRoot, specDirArg, corporateTechFile string) (string
 		if database == nil && strings.TrimSpace(baseline.Decisions.PersistentEngine) != "" {
 			database = &techDecisionCandidate{Value: strings.TrimSpace(baseline.Decisions.PersistentEngine), File: filepath.ToSlash(corporateTechFile), Line: 1, MatchedOn: "corporate approved baseline"}
 		}
+		if cacheEngine == nil && strings.TrimSpace(baseline.Decisions.RedisVersion) != "" {
+			cacheEngine = &techDecisionCandidate{Value: "redis", File: filepath.ToSlash(corporateTechFile), Line: 1, MatchedOn: "corporate approved baseline"}
+		}
 		if migration == nil && strings.TrimSpace(baseline.Decisions.MigrationTool) != "" {
 			migration = &techDecisionCandidate{Value: strings.TrimSpace(baseline.Decisions.MigrationTool), File: filepath.ToSlash(corporateTechFile), Line: 1, MatchedOn: "corporate approved baseline"}
 		}
@@ -573,6 +580,9 @@ func runSpecTechDetect(targetRoot, specDirArg, corporateTechFile string) (string
 	}
 	if database != nil {
 		detected["persistent_engine"] = database
+	}
+	if cacheEngine != nil {
+		detected["cache_engine"] = cacheEngine
 	}
 	if migration != nil {
 		detected["migration_tool"] = migration

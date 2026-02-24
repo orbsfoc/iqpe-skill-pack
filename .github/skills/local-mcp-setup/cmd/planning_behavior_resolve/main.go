@@ -97,40 +97,48 @@ func readTopLevelScalars(path string) (map[string]string, error) {
 	}
 	defer f.Close()
 
-	result := map[string]string{}
+	out := map[string]string{}
+	parents := []string{}
+	indents := []int{}
+
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line := scanner.Text()
 		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
-			continue
-		}
-		if strings.HasPrefix(strings.TrimLeft(line, " \t"), "-") {
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") || strings.HasPrefix(trimmed, "-") {
 			continue
 		}
 
 		indent := len(line) - len(strings.TrimLeft(line, " \t"))
-		if indent != 0 {
-			continue
+		for len(indents) > 0 && indent <= indents[len(indents)-1] {
+			indents = indents[:len(indents)-1]
+			parents = parents[:len(parents)-1]
 		}
 
-		idx := strings.Index(line, ":")
+		idx := strings.Index(trimmed, ":")
 		if idx <= 0 {
 			continue
 		}
+		key := strings.TrimSpace(trimmed[:idx])
+		value := strings.TrimSpace(trimmed[idx+1:])
 
-		key := strings.TrimSpace(line[:idx])
-		value := strings.TrimSpace(line[idx+1:])
-		value = strings.Trim(value, "\"'")
-		if key != "" {
-			result[key] = value
+		fullPath := key
+		if len(parents) > 0 {
+			fullPath = strings.Join(append(append([]string{}, parents...), key), ".")
 		}
+
+		if value == "" {
+			parents = append(parents, key)
+			indents = append(indents, indent)
+			continue
+		}
+		out[fullPath] = strings.Trim(value, "\"'")
 	}
 
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	return result, nil
+	return out, nil
 }
 
 func scalar(m map[string]string, key string) string {
@@ -185,14 +193,14 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 		scalar(values, "plan_index_file"),
 		scalar(values, "plan_story_file_pattern"),
 		scalar(values, "plan_traceability_required"),
-		scalar(values, "default"),
-		scalar(values, "service_per_repo_best_practice"),
-		scalar(values, "contract_first_required"),
-		scalar(values, "require_openapi_for_http"),
-		scalar(values, "dependency_graph_required"),
-		scalar(values, "code_review_feedback_loop_required"),
-		scalar(values, "orchestration_requires_all_prerequisites_passed"),
-		scalar(values, "ai_usage_metrics_required_when_available"),
+		scalar(values, "topology.default"),
+		scalar(values, "topology.service_per_repo_best_practice"),
+		scalar(values, "contracts.contract_first_required"),
+		scalar(values, "contracts.require_openapi_for_http"),
+		scalar(values, "workstreams.dependency_graph_required"),
+		scalar(values, "reviews.code_review_feedback_loop_required"),
+		scalar(values, "integration.orchestration_requires_all_prerequisites_passed"),
+		scalar(values, "evidence.ai_usage_metrics_required_when_available"),
 	)
 }
 

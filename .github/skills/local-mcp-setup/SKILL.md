@@ -36,6 +36,10 @@ Planning behavior resolution (MCP-configurable):
 
 `go run ./.github/skills/local-mcp-setup/cmd/planning_behavior_resolve/main.go --target-root <target_repo_root_abs_path> --out docs/planning-behavior-resolution.md`
 
+Phase precondition check (cross-platform Go checker):
+
+`go run ./.github/skills/local-mcp-setup/cmd/phase_precondition_check/main.go --target-root <target_repo_root_abs_path> --phase 01`
+
 Default profile fallback path is bundled locally:
 - `./.github/skills/local-mcp-setup/corporate-docs/planning-behavior-profile.yaml`
 
