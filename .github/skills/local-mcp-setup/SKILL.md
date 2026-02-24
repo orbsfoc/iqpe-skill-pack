@@ -40,6 +40,18 @@ Phase precondition check (cross-platform Go checker):
 
 `go run ./.github/skills/local-mcp-setup/cmd/phase_precondition_check/main.go --target-root <target_repo_root_abs_path> --phase 01`
 
+Implementation parity check (TC adaptor IDs vs implemented adaptor directories):
+
+`go run ./.github/skills/local-mcp-setup/cmd/implementation_parity_check/main.go --target-root <target_repo_root_abs_path> --tc-file docs/technology-constraints.md`
+
+Release blocker ownership lint (severity findings vs blocker ownership completeness):
+
+`go run ./.github/skills/local-mcp-setup/cmd/release_blocker_ownership_lint/main.go --target-root <target_repo_root_abs_path> --file docs/handoffs/release/severity-classification.md`
+
+Feedback tree policy lint (fails when non-feedback draft deliverables are placed under `docs/feedback/**`):
+
+`go run ./.github/skills/local-mcp-setup/cmd/feedback_tree_policy_lint/main.go --target-root <target_repo_root_abs_path>`
+
 Default profile fallback path is bundled locally:
 - `./.github/skills/local-mcp-setup/corporate-docs/planning-behavior-profile.yaml`
 
