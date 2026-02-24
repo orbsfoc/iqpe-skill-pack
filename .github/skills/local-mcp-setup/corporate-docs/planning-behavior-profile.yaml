@@ -3,6 +3,11 @@ status: APPROVED
 owner_role: principal_architect
 approval_owner: platform_lead
 approval_status: APPROVED
+plan_storage_mode: per-story-files
+plan_directory: docs/plans
+plan_index_file: docs/plans/index.md
+plan_story_file_pattern: PLAN-{id}-{slug}.md
+plan_traceability_required: true
 
 topology:
   default: dependency-driven

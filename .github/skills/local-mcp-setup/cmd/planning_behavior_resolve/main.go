@@ -158,6 +158,11 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 
 ## Resolved controls
 - profile_id: %s
+- plan_storage_mode: %s
+- plan_directory: %s
+- plan_index_file: %s
+- plan_story_file_pattern: %s
+- plan_traceability_required: %s
 - topology.default: %s
 - topology.service_per_repo_best_practice: %s
 - contracts.contract_first_required: %s
@@ -175,6 +180,11 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 		targetRoot,
 		relPath(targetRoot, profilePath),
 		scalar(values, "profile_id"),
+		scalar(values, "plan_storage_mode"),
+		scalar(values, "plan_directory"),
+		scalar(values, "plan_index_file"),
+		scalar(values, "plan_story_file_pattern"),
+		scalar(values, "plan_traceability_required"),
 		scalar(values, "default"),
 		scalar(values, "service_per_repo_best_practice"),
 		scalar(values, "contract_first_required"),
