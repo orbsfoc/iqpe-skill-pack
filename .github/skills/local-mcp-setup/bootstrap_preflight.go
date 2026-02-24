@@ -277,6 +277,8 @@ func writeBootstrapReport(targetRoot, specDir, mcpPath string) (string, error) {
 		fmt.Sprintf("- Timestamp (UTC): %s", nowUTC()),
 		fmt.Sprintf("- Target root: %s", targetRoot),
 		fmt.Sprintf("- SPEC_DIR: %s", specDir),
+		"- Feedback canonical path: docs/feedback/workflow/",
+		"- Ownership manifest: docs/tooling/read-only-manifest.json",
 		"",
 		"## Applied changes",
 		"- Ensured `.vscode/mcp.json` exists",
