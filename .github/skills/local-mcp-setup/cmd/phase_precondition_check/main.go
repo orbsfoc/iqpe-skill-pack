@@ -46,6 +46,7 @@ func main() {
 		require("docs/requirements.md")
 		require("docs/repo-topology-decision.md")
 		require("docs/openapi-contract-plan.md")
+		require("docs/data-architecture-decision.md")
 	case "03":
 		require("docs/implementation-plan.md")
 		require("docs/technology-constraints.md")
@@ -58,8 +59,11 @@ func main() {
 	case "04":
 		require("docs/handoffs/dev/phase-gate.md")
 		require("docs/tooling/mcp-usage-evidence.md")
+		require("docs/integration/compose-mode-decision.md")
 	case "05":
 		require("docs/handoffs/release/phase-gate.md")
+		require("docs/handoffs/routing-matrix.md")
+		require("docs/data-architecture-decision.md")
 	default:
 		printBlocked(*phase, []string{"unsupported phase value"})
 		return

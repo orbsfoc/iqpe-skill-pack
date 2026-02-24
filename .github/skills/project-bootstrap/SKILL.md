@@ -14,7 +14,11 @@ Use deterministic MCP actions to initialize workflow execution:
 2. Verify `docs/tooling/bootstrap-report.md` exists.
 3. Run `mcp.action.scaffold_service_workspace` to create `repos/` workspace scaffolds.
 4. Verify `docs/adr/ADR-0001-repo-naming-conventions.md` exists.
-5. Continue with preflight checks before phase execution.
+5. Verify governance baseline artifacts exist:
+	- `docs/data-architecture-decision.md`
+	- `docs/handoffs/routing-matrix.md`
+	- `docs/integration/compose-mode-decision.md`
+6. Continue with preflight checks before phase execution.
 
 Service workspace scaffold includes starter repositories:
 - `repos/go-module-service`

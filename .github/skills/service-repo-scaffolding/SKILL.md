@@ -17,6 +17,10 @@ Use deterministic action:
    - `ts-react-service`
    - `demo-compose`
 3. Confirm naming ADR exists at `docs/adr/ADR-0001-repo-naming-conventions.md`.
+4. Confirm governance baseline artifacts exist:
+   - `docs/data-architecture-decision.md`
+   - `docs/handoffs/routing-matrix.md`
+   - `docs/integration/compose-mode-decision.md`
 
 Expected baseline in each starter repo:
 - `README.md`
@@ -24,3 +28,4 @@ Expected baseline in each starter repo:
 - `docs/plans/`
 - `docs/current-state/`
 - `docs/diagrams/`
+- `docs/tooling/go-bin-convention.md`
