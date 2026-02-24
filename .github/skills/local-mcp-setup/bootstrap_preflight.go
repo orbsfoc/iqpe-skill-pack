@@ -2,14 +2,17 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -41,7 +44,93 @@ type mcpConfig struct {
 type mcpServer struct {
 	Transport string   `json:"transport"`
 	Command   string   `json:"command"`
+	URL       string   `json:"url"`
 	Args      []string `json:"args"`
+}
+
+func inspectExecutable(command string) map[string]any {
+	diagnostics := map[string]any{
+		"command": strings.TrimSpace(command),
+	}
+	trimmed := strings.TrimSpace(command)
+	if trimmed == "" {
+		diagnostics["runnable"] = false
+		diagnostics["reason"] = "empty command"
+		return diagnostics
+	}
+
+	resolved := ""
+	if filepath.IsAbs(trimmed) || strings.Contains(trimmed, string(os.PathSeparator)) {
+		resolved = trimmed
+	} else if path, err := exec.LookPath(trimmed); err == nil {
+		resolved = path
+	}
+
+	if resolved == "" {
+		diagnostics["runnable"] = false
+		diagnostics["reason"] = "command not found on PATH"
+		return diagnostics
+	}
+
+	diagnostics["resolved_path"] = resolved
+	info, err := os.Stat(resolved)
+	if err != nil {
+		diagnostics["runnable"] = false
+		diagnostics["reason"] = err.Error()
+		return diagnostics
+	}
+	if info.IsDir() {
+		diagnostics["runnable"] = false
+		diagnostics["reason"] = "resolved path is a directory"
+		return diagnostics
+	}
+
+	execPerm := info.Mode().Perm()&0o111 != 0
+	diagnostics["executable_permission"] = execPerm
+	diagnostics["runnable"] = execPerm
+
+	if runtime.GOOS == "darwin" {
+		if out, err := exec.Command("xattr", "-p", "com.apple.quarantine", resolved).CombinedOutput(); err == nil {
+			diagnostics["macos_quarantine"] = strings.TrimSpace(string(out))
+		} else {
+			diagnostics["macos_quarantine"] = "absent"
+		}
+		if out, err := exec.Command("codesign", "-dv", resolved).CombinedOutput(); err == nil {
+			diagnostics["macos_codesign"] = "present"
+			diagnostics["macos_codesign_detail"] = strings.TrimSpace(string(out))
+		} else {
+			diagnostics["macos_codesign"] = "missing_or_unreadable"
+			diagnostics["macos_codesign_detail"] = strings.TrimSpace(string(out))
+		}
+	}
+
+	return diagnostics
+}
+
+func checkHTTPInitialize(endpoint string) (bool, string) {
+	trimmed := strings.TrimSpace(endpoint)
+	if trimmed == "" {
+		return false, "empty url"
+	}
+	body := []byte(`{"jsonrpc":"2.0","id":"preflight-init","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"iqpe-preflight","version":"1.0.0"}}}`)
+	req, err := http.NewRequest(http.MethodPost, trimmed, bytes.NewReader(body))
+	if err != nil {
+		return false, err.Error()
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err.Error()
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return false, fmt.Sprintf("status %d", resp.StatusCode)
+	}
+	return true, "ok"
 }
 
 func nowUTC() string {
@@ -241,7 +330,13 @@ func runPreflight(targetRoot, specDirArg, mcpPath string) (string, error) {
 	mcpServersPresent := false
 	mcpUsesLocalBinary := false
 	mcpConfigCommandRunnable := false
+	mcpConfigTransportOK := false
+	mcpHTTPInitializeOK := false
+	mcpHTTPInitializeErrors := map[string]string{}
+	mcpTransports := map[string]string{}
+	mcpBinaryDiagnostics := map[string]any{}
 	mcpConfigCommand := ""
+	mcpConfigURL := ""
 	mcpParseError := ""
 
 	if data, err := os.ReadFile(mcpPath); err == nil {
@@ -253,25 +348,51 @@ func runPreflight(targetRoot, specDirArg, mcpPath string) (string, error) {
 			present := 0
 			local := 0
 			runnable := 0
+			transportOK := 0
+			httpInitOK := 0
 			for _, name := range required {
 				server, ok := cfg.Servers[name]
 				if !ok {
 					continue
 				}
 				present++
+				transport := strings.ToLower(strings.TrimSpace(server.Transport))
+				mcpTransports[name] = transport
 				if commandLooksLikeLocalMCP(server.Command) {
 					local++
 				}
-				if commandRunnable(server.Command) {
-					runnable++
+				if transport == "stdio" {
+					if commandRunnable(server.Command) {
+						runnable++
+						transportOK++
+					}
+				} else if transport == "http" {
+					url := strings.TrimSpace(server.URL)
+					if url != "" {
+						transportOK++
+						ok, detail := checkHTTPInitialize(url)
+						if ok {
+							httpInitOK++
+						} else {
+							mcpHTTPInitializeErrors[name] = detail
+						}
+					} else {
+						mcpHTTPInitializeErrors[name] = "missing url"
+					}
 				}
 				if name == "repo-read-local" {
 					mcpConfigCommand = strings.TrimSpace(server.Command)
+					mcpConfigURL = strings.TrimSpace(server.URL)
 				}
 			}
 			mcpServersPresent = present == len(required)
 			mcpUsesLocalBinary = local == len(required)
 			mcpConfigCommandRunnable = runnable == len(required)
+			mcpConfigTransportOK = transportOK == len(required)
+			mcpHTTPInitializeOK = httpInitOK == len(required)
+			if mcpConfigCommand != "" {
+				mcpBinaryDiagnostics = inspectExecutable(mcpConfigCommand)
+			}
 		}
 	}
 
@@ -282,7 +403,21 @@ func runPreflight(targetRoot, specDirArg, mcpPath string) (string, error) {
 		specReady = specCount > 0
 	}
 
-	mcpReady := mcpServersPresent && mcpUsesLocalBinary && mcpConfigCommandRunnable
+	mcpReady := false
+	if len(mcpTransports) > 0 {
+		allHTTP := true
+		for _, transport := range mcpTransports {
+			if transport != "http" {
+				allHTTP = false
+				break
+			}
+		}
+		if allHTTP {
+			mcpReady = mcpServersPresent && mcpConfigTransportOK && mcpHTTPInitializeOK
+		} else {
+			mcpReady = mcpServersPresent && mcpUsesLocalBinary && mcpConfigCommandRunnable
+		}
+	}
 	status := "PASS"
 	if !mcpReady || !specReady {
 		status = "BLOCKED"
@@ -303,7 +438,13 @@ func runPreflight(targetRoot, specDirArg, mcpPath string) (string, error) {
 		"mcp_uses_local_binary":       mcpUsesLocalBinary,
 		"mcp_config_parse_error":      mcpParseError,
 		"mcp_config_command":          mcpConfigCommand,
+		"mcp_config_url":              mcpConfigURL,
 		"mcp_config_command_runnable": mcpConfigCommandRunnable,
+		"mcp_config_transport_ok":     mcpConfigTransportOK,
+		"mcp_http_initialize_ok":      mcpHTTPInitializeOK,
+		"mcp_http_initialize_errors":  mcpHTTPInitializeErrors,
+		"mcp_transports":              mcpTransports,
+		"mcp_binary_diagnostics":      mcpBinaryDiagnostics,
 		"spec_ready":                  specReady,
 		"spec_file_count":             specCount,
 	}
