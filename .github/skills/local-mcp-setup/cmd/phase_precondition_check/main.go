@@ -53,6 +53,7 @@ func main() {
 		require("docs/implementation-plan.md")
 		require("docs/technology-constraints.md")
 		require("docs/plans/planning-signoff.md")
+		require("docs/plans/control-applicability-matrix.md")
 		require("docs/handoffs/architect/phase-gate.md")
 		if requiresOpenAPISpec(absRoot) {
 			if !hasOpenAPISpec(absRoot) {
@@ -61,6 +62,18 @@ func main() {
 		}
 		if !hasApprovedPlanningSignoff(absRoot) {
 			missing = append(missing, "docs/plans/planning-signoff.md (must include Approval Status: APPROVED)")
+		}
+		if !hasApprovedControlApplicabilityMatrix(absRoot) {
+			missing = append(missing, "docs/plans/control-applicability-matrix.md (must include APPLICABLE/NOT-APPLICABLE rows with Approval Status: APPROVED)")
+		}
+		if requiresModelBoundaryClassification(absRoot) && !hasApprovedModelBoundaryClassification(absRoot) {
+			missing = append(missing, "docs/plans/model-boundary-classification.md (required and must include Approval Status: APPROVED when shared-module stream exists)")
+		}
+		if requiresSharedContractOwnership(absRoot) && !hasApprovedSharedContractOwnership(absRoot) {
+			missing = append(missing, "docs/openapi-contract-ownership.md (required and must include Approval Status: APPROVED for shared client/server contract dependency)")
+		}
+		if requiresIntentControlAccountability(absRoot) && !hasApprovedIntentControlAccountability(absRoot) {
+			missing = append(missing, "docs/plans/intent-control-accountability.md (required for PARTIAL/SKIPPED controls with owner/remediation/closure and Approval Status: APPROVED)")
 		}
 	case "04":
 		require("docs/handoffs/dev/phase-gate.md")
@@ -256,6 +269,98 @@ func hasApprovedPlanningSignoff(root string) bool {
 		return false
 	}
 	return strings.Contains(strings.ToUpper(string(content)), "APPROVAL STATUS: APPROVED")
+}
+
+func hasApprovedControlApplicabilityMatrix(root string) bool {
+	path := filepath.Join(root, "docs", "plans", "control-applicability-matrix.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	text := strings.ToUpper(string(content))
+	hasApplicability := strings.Contains(text, "APPLICABLE") && strings.Contains(text, "NOT-APPLICABLE")
+	hasApproved := strings.Contains(text, "APPROVAL STATUS") && strings.Contains(text, "APPROVED")
+	hasOwner := strings.Contains(text, "OWNER")
+	hasRationale := strings.Contains(text, "RATIONALE")
+	return hasApplicability && hasApproved && hasOwner && hasRationale
+}
+
+func requiresModelBoundaryClassification(root string) bool {
+	paths := []string{
+		filepath.Join(root, "docs", "plans", "repo-change-plan.md"),
+		filepath.Join(root, "docs", "implementation-plan.md"),
+	}
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		text := strings.ToLower(string(content))
+		if strings.Contains(text, "shared module") || strings.Contains(text, "shared-module") || strings.Contains(text, "shared contract dto") {
+			return true
+		}
+	}
+	return false
+}
+
+func hasApprovedModelBoundaryClassification(root string) bool {
+	path := filepath.Join(root, "docs", "plans", "model-boundary-classification.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	text := strings.ToUpper(string(content))
+	hasClassification := strings.Contains(text, "DOMAIN_MODEL_INTERNAL") || strings.Contains(text, "SHARED_CONTRACT_DTO_DAO")
+	hasApproved := strings.Contains(text, "APPROVAL STATUS") && strings.Contains(text, "APPROVED")
+	return hasClassification && hasApproved
+}
+
+func requiresSharedContractOwnership(root string) bool {
+	path := filepath.Join(root, "docs", "openapi-contract-plan.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	text := strings.ToLower(string(content))
+	hasClient := strings.Contains(text, "client")
+	hasServer := strings.Contains(text, "server")
+	hasShared := strings.Contains(text, "shared") || strings.Contains(text, "same contract")
+	return hasClient && hasServer && hasShared
+}
+
+func hasApprovedSharedContractOwnership(root string) bool {
+	path := filepath.Join(root, "docs", "openapi-contract-ownership.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	text := strings.ToUpper(string(content))
+	hasBoundary := strings.Contains(text, "CONTRACT BOUNDARY TYPE")
+	hasSource := strings.Contains(text, "SOURCE OF TRUTH")
+	hasApproved := strings.Contains(text, "APPROVAL STATUS") && strings.Contains(text, "APPROVED")
+	return hasBoundary && hasSource && hasApproved
+}
+
+func requiresIntentControlAccountability(root string) bool {
+	path := filepath.Join(root, "docs", "plans", "control-applicability-matrix.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	text := strings.ToUpper(string(content))
+	return strings.Contains(text, "PARTIAL") || strings.Contains(text, "SKIPPED")
+}
+
+func hasApprovedIntentControlAccountability(root string) bool {
+	path := filepath.Join(root, "docs", "plans", "intent-control-accountability.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	text := strings.ToUpper(string(content))
+	hasRequiredFields := strings.Contains(text, "OWNER") && strings.Contains(text, "REMEDIATION") && strings.Contains(text, "TARGET CLOSURE PHASE")
+	hasApproved := strings.Contains(text, "APPROVAL STATUS") && strings.Contains(text, "APPROVED")
+	return hasRequiredFields && hasApproved
 }
 
 func printBlocked(phase string, missing []string) {

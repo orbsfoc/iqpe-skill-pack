@@ -21,19 +21,14 @@ Use deterministic MCP actions to initialize workflow execution:
 6. Run `mcp.action.context_promotion_publish` with shared repo roots to publish reusable context automatically.
 7. Continue with preflight checks before phase execution.
 
-Service workspace scaffold includes starter repositories:
-- `repos/go-library-module`
-- `repos/go-application-service`
-- `repos/ts-react-service`
-- `repos/demo-compose`
+Optional after planning signoff:
+- Run `mcp.action.bootstrap_openapi_repo_if_missing` when planning calls for a dedicated OpenAPI contract repository.
+- The action creates the target repo only when:
+	- `docs/plans/planning-signoff.md` is `APPROVED`, and
+	- `docs/plans/repo-change-plan.md` contains a matching `create` action for the target repo path.
+- If repo already exists, action returns `PASS` without creating anything.
 
-Each starter repository is initialized with:
-- `README.md`
-- `CHANGELOG.md`
-- `docs/plans/`
-- `docs/current-state/`
-- `docs/diagrams/`
-- `docs/handoffs/`
+Service workspace scaffold initializes only the workspace boundary and governance/planning artifacts.
 
 Automated context promotion action:
 - `mcp.action.context_promotion_publish`
