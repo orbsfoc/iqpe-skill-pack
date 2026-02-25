@@ -181,6 +181,9 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 - evidence.ai_usage_metrics_required_when_available: %s
 - storage.strategy_required: %s
 - storage.primary_system_of_record: %s
+- storage.prefer_standard_interfaces: %s
+- storage.prefer_managed_service_reuse: %s
+- storage.custom_storage_requires_tradeoff_doc: %s
 - storage.cache_policy_required: %s
 - storage.object_storage_for_blobs_required: %s
 - storage.search_index_for_discovery_allowed: %s
@@ -195,6 +198,17 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 - production.upgrade_strategy_required: %s
 - production.zero_downtime_upgrades_required: %s
 - production.operability_slos_required: %s
+- service_module.value_hypothesis_required: %s
+- service_module.customer_outcome_link_required: %s
+- service_module.lifecycle_maintenance_cost_assessment_required: %s
+- service_module.build_vs_buy_balance_required: %s
+- service_module.ownership_and_sunset_plan_required: %s
+- service_module.necessity_evidence_required: %s
+- service_module.unwarranted_service_creation_prohibited: %s
+- repo_strategy.repo_action_plan_required: %s
+- repo_strategy.create_vs_update_decision_required: %s
+- repo_strategy.prefer_updating_existing_repo_when_boundary_fits: %s
+- repo_strategy.new_repo_requires_boundary_and_ownership_justification: %s
 
 ## Notes
 - Values are resolved from the selected profile source for this run.
@@ -219,6 +233,9 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 		scalar(values, "evidence.ai_usage_metrics_required_when_available"),
 		scalar(values, "storage.strategy_required"),
 		scalar(values, "storage.primary_system_of_record"),
+		scalar(values, "storage.prefer_standard_interfaces"),
+		scalar(values, "storage.prefer_managed_service_reuse"),
+		scalar(values, "storage.custom_storage_requires_tradeoff_doc"),
 		scalar(values, "storage.cache_policy_required"),
 		scalar(values, "storage.object_storage_for_blobs_required"),
 		scalar(values, "storage.search_index_for_discovery_allowed"),
@@ -233,6 +250,17 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 		scalar(values, "production.upgrade_strategy_required"),
 		scalar(values, "production.zero_downtime_upgrades_required"),
 		scalar(values, "production.operability_slos_required"),
+		scalar(values, "service_module.value_hypothesis_required"),
+		scalar(values, "service_module.customer_outcome_link_required"),
+		scalar(values, "service_module.lifecycle_maintenance_cost_assessment_required"),
+		scalar(values, "service_module.build_vs_buy_balance_required"),
+		scalar(values, "service_module.ownership_and_sunset_plan_required"),
+		scalar(values, "service_module.necessity_evidence_required"),
+		scalar(values, "service_module.unwarranted_service_creation_prohibited"),
+		scalar(values, "repo_strategy.repo_action_plan_required"),
+		scalar(values, "repo_strategy.create_vs_update_decision_required"),
+		scalar(values, "repo_strategy.prefer_updating_existing_repo_when_boundary_fits"),
+		scalar(values, "repo_strategy.new_repo_requires_boundary_and_ownership_justification"),
 	)
 }
 

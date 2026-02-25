@@ -82,11 +82,11 @@ func main() {
 }
 
 func scaffoldGoModule(workspace string, mkDir func(string), writeIfMissing func(string, string)) {
-	repoRoot := filepath.Join(workspace, "go-module-service")
-	scaffoldRepoDocs(repoRoot, "go-module-service", mkDir, writeIfMissing)
-	writeIfMissing(filepath.Join(repoRoot, "go.mod"), "module example.com/go-module-service\n\ngo 1.24\n")
-	writeIfMissing(filepath.Join(repoRoot, "pkg", "module", "module.go"), "package module\n\nfunc Name() string {\n\treturn \"go-module-service\"\n}\n")
-	writeIfMissing(filepath.Join(repoRoot, "Dockerfile"), "FROM golang:1.24-alpine\nWORKDIR /workspace\nCOPY . .\nRUN go test ./...\nCMD [\"sh\",\"-c\",\"echo go-module-service ready\"]\n")
+	repoRoot := filepath.Join(workspace, "go-library-module")
+	scaffoldRepoDocs(repoRoot, "go-library-module", mkDir, writeIfMissing)
+	writeIfMissing(filepath.Join(repoRoot, "go.mod"), "module example.com/go-library-module\n\ngo 1.24\n")
+	writeIfMissing(filepath.Join(repoRoot, "pkg", "module", "module.go"), "package module\n\nfunc Name() string {\n\treturn \"go-library-module\"\n}\n")
+	writeIfMissing(filepath.Join(repoRoot, "Dockerfile"), "FROM golang:1.24-alpine\nWORKDIR /workspace\nCOPY . .\nRUN go test ./...\nCMD [\"sh\",\"-c\",\"echo go-library-module ready\"]\n")
 }
 
 func scaffoldGoApp(workspace string, mkDir func(string), writeIfMissing func(string, string)) {
@@ -115,9 +115,9 @@ func scaffoldDemoCompose(workspace string, mkDir func(string), writeIfMissing fu
 	mkDir(filepath.Join(repoRoot, "workspace"))
 	mkDir(filepath.Join(repoRoot, "scripts"))
 	writeIfMissing(filepath.Join(repoRoot, "workspace", ".gitkeep"), "")
-	writeIfMissing(filepath.Join(repoRoot, "scripts", "checkout-repos.sh"), "#!/usr/bin/env bash\nset -euo pipefail\n\nROOT=\"$(cd \"$(dirname \"$0\")/..\" && pwd)\"\nWORKSPACE=\"$ROOT/workspace\"\nmkdir -p \"$WORKSPACE\"\n\nclone_or_update() {\n  local name=\"$1\"\n  local repo_url=\"$2\"\n  local branch=\"${3:-main}\"\n  if [[ -z \"$repo_url\" ]]; then\n    echo \"skip $name (repo URL not set)\"\n    return\n  fi\n  local target=\"$WORKSPACE/$name\"\n  if [[ -d \"$target/.git\" ]]; then\n    git -C \"$target\" fetch --all\n    git -C \"$target\" checkout \"$branch\"\n    git -C \"$target\" pull --ff-only\n  else\n    git clone --branch \"$branch\" \"$repo_url\" \"$target\"\n  fi\n}\n\nclone_or_update \"go-module-service\" \"${GO_MODULE_REPO_URL:-}\" \"${GO_MODULE_REPO_REF:-main}\"\nclone_or_update \"go-application-service\" \"${GO_APPLICATION_REPO_URL:-}\" \"${GO_APPLICATION_REPO_REF:-main}\"\nclone_or_update \"ts-react-service\" \"${TS_REACT_REPO_URL:-}\" \"${TS_REACT_REPO_REF:-main}\"\n\necho \"workspace checkout complete: $WORKSPACE\"\n")
-	writeIfMissing(filepath.Join(repoRoot, "docker-compose.yml"), "services:\n  go-module-service:\n    build:\n      context: ./workspace/go-module-service\n      dockerfile: Dockerfile\n    command: [\"sh\",\"-c\",\"echo go-module-service integrated\"]\n\n  go-application-service:\n    build:\n      context: ./workspace/go-application-service\n      dockerfile: Dockerfile\n    ports:\n      - \"8080:8080\"\n\n  ts-react-service:\n    build:\n      context: ./workspace/ts-react-service\n      dockerfile: Dockerfile\n    ports:\n      - \"4173:4173\"\n")
-	writeIfMissing(filepath.Join(repoRoot, "README.md"), "# demo-compose\n\nIntegration workspace for bringing multiple service repos together.\n\n## Usage\n\n1. Set repo URLs as environment variables:\n   - `GO_MODULE_REPO_URL`\n   - `GO_APPLICATION_REPO_URL`\n   - `TS_REACT_REPO_URL`\n2. Run `./scripts/checkout-repos.sh` to clone/update repos into `workspace/`.\n3. Start integration compose stack:\n   - `docker compose up --build`\n")
+	writeIfMissing(filepath.Join(repoRoot, "scripts", "checkout-repos.sh"), "#!/usr/bin/env bash\nset -euo pipefail\n\nROOT=\"$(cd \"$(dirname \"$0\")/..\" && pwd)\"\nWORKSPACE=\"$ROOT/workspace\"\nmkdir -p \"$WORKSPACE\"\n\nclone_or_update() {\n  local name=\"$1\"\n  local repo_url=\"$2\"\n  local branch=\"${3:-main}\"\n  if [[ -z \"$repo_url\" ]]; then\n    echo \"skip $name (repo URL not set)\"\n    return\n  fi\n  local target=\"$WORKSPACE/$name\"\n  if [[ -d \"$target/.git\" ]]; then\n    git -C \"$target\" fetch --all\n    git -C \"$target\" checkout \"$branch\"\n    git -C \"$target\" pull --ff-only\n  else\n    git clone --branch \"$branch\" \"$repo_url\" \"$target\"\n  fi\n}\n\nclone_or_update \"go-library-module\" \"${GO_LIBRARY_REPO_URL:-${GO_MODULE_REPO_URL:-}}\" \"${GO_LIBRARY_REPO_REF:-${GO_MODULE_REPO_REF:-main}}\"\nclone_or_update \"go-application-service\" \"${GO_APPLICATION_REPO_URL:-}\" \"${GO_APPLICATION_REPO_REF:-main}\"\nclone_or_update \"ts-react-service\" \"${TS_REACT_REPO_URL:-}\" \"${TS_REACT_REPO_REF:-main}\"\n\necho \"workspace checkout complete: $WORKSPACE\"\n")
+	writeIfMissing(filepath.Join(repoRoot, "docker-compose.yml"), "services:\n  go-library-module:\n    build:\n      context: ./workspace/go-library-module\n      dockerfile: Dockerfile\n    command: [\"sh\",\"-c\",\"echo go-library-module integrated\"]\n\n  go-application-service:\n    build:\n      context: ./workspace/go-application-service\n      dockerfile: Dockerfile\n    ports:\n      - \"8080:8080\"\n\n  ts-react-service:\n    build:\n      context: ./workspace/ts-react-service\n      dockerfile: Dockerfile\n    ports:\n      - \"4173:4173\"\n")
+	writeIfMissing(filepath.Join(repoRoot, "README.md"), "# demo-compose\n\n## Purpose\n- Integrate and validate cross-repo behavior across service and module repositories.\n\n## Scope\n- In scope: local integration orchestration and smoke validation.\n- Out of scope: production deployment orchestration.\n\n## Dependencies\n- Docker and Docker Compose\n- Checked-out repository workspace under `workspace/`\n\n## Runbook\n- Build: `docker compose build`\n- Run: `docker compose up`\n- Test: run repo-specific smoke checks after compose startup\n\n## Interfaces\n- Consumes service interfaces exposed by checked-out repos.\n\n## Ownership\n- Team: integration-platform\n- Primary owner: <owner>\n- Escalation: <contact>\n\n## Traceability\n- REQ IDs: REQ-\n- PLAN IDs: PLAN-\n- DIAG IDs: DIAG-\n- ADR IDs applied: ADR-\n\n## Plan-to-Implementation Summary\n- Plan intent:\n- Key implementation details delivered:\n- Deferred/not delivered:\n")
 }
 
 func scaffoldRepoDocs(repoRoot, repoName string, mkDir func(string), writeIfMissing func(string, string)) {
@@ -127,13 +127,16 @@ func scaffoldRepoDocs(repoRoot, repoName string, mkDir func(string), writeIfMiss
 	mkDir(filepath.Join(repoRoot, "docs", "current-state"))
 	mkDir(filepath.Join(repoRoot, "docs", "diagrams"))
 	mkDir(filepath.Join(repoRoot, "docs", "tooling"))
+	mkDir(filepath.Join(repoRoot, "docs", "handoffs"))
 
-	writeIfMissing(filepath.Join(repoRoot, "README.md"), fmt.Sprintf("# %s\n\nStarter scaffold repository generated by project bootstrap.\n", repoName))
-	writeIfMissing(filepath.Join(repoRoot, "CHANGELOG.md"), "# Changelog\n\n## Unreleased\n- Initial scaffold\n")
+	writeIfMissing(filepath.Join(repoRoot, "README.md"), repoReadmeTemplate(repoName))
+	writeIfMissing(filepath.Join(repoRoot, "CHANGELOG.md"), "# Changelog\n\n## [Unreleased]\n\n## [YYYY-MM-DD] - <version/tag>\n### Plan Reference\n- Plan artifact: <path or PLAN-id>\n\n### Added\n- <change summary> (REQ-xxx, PLAN-xxx)\n\n### Changed\n- <change summary> (DEF-xxx, TEST-xxx)\n\n### Fixed\n- <change summary> (DEF-xxx)\n\n### Migration/Operations Notes\n- <required actions, if any>\n")
 	writeIfMissing(filepath.Join(repoRoot, "docs", "README.md"), docsReadme(repoName))
 	writeIfMissing(filepath.Join(repoRoot, "docs", "plans", "README.md"), "# Plans\n\nStore current implementation plans and story-linked execution artifacts.\n")
 	writeIfMissing(filepath.Join(repoRoot, "docs", "current-state", "README.md"), "# Current State\n\nSummarize current runtime behavior, open risks, and known constraints.\n")
+	writeIfMissing(filepath.Join(repoRoot, "docs", "current-state", "implementation-summary.md"), "# Implementation Summary\n\n## Plan intent\n-\n\n## Key implementation details\n-\n\n## Deferred/not delivered\n-\n")
 	writeIfMissing(filepath.Join(repoRoot, "docs", "diagrams", "high-level.mmd"), "flowchart TD\n    A[Client] --> B[Service Boundary]\n    B --> C[Core Logic]\n")
+	writeIfMissing(filepath.Join(repoRoot, "docs", "handoffs", "traceability-pack.md"), "# Handoff Traceability Pack - Repo\n\n## ID Inventory\n- REQ:\n- PLAN:\n- DIAG:\n- TEST:\n- DEF:\n- TC:\n\n## Mapping\n- REQ-xxx -> PLAN-xxx -> DIAG-xxx -> TEST-xxx/DEF-xxx\n\n## Planning Behavior\n- profile_id:\n- profile_source:\n- profile_version:\n- resolved_controls_snapshot:\n\n## Workflow Decisions Applied\n-\n\n## ADR Ledger\n| ADR ID | Title | Applied Scope | Approval Status |\n|---|---|---|---|\n| ADR-xxxx | <title> | <repo/system> | APPROVED/BLOCKED |\n\n## System Description\n-\n\n## Diagram Index\n- [DIAG-xxx] <name> -> <path>\n")
 	writeIfMissing(filepath.Join(repoRoot, "docs", "tooling", "go-bin-convention.md"), "# Go Binary Convention\n\n- Resolve `go` from `PATH` first.\n- Fallback probe order: `/usr/local/go/bin/go`, `/opt/homebrew/bin/go`, `/snap/bin/go`.\n- If unresolved, fail with explicit `go not found` and execution context evidence.\n")
 }
 
@@ -144,12 +147,13 @@ func scaffoldNamingADR(targetRoot string, writeIfMissing func(string, string)) {
 func scaffoldRun5GovernanceArtifacts(targetRoot string, writeIfMissing func(string, string)) {
 	writeIfMissing(filepath.Join(targetRoot, "docs", "data-architecture-decision.md"), "# Data Architecture Decision\n\n- Decision ID: DA-0001\n- Status: Proposed\n- Primary database engine:\n- Primary cache engine:\n- Approved deviations: none\n")
 	writeIfMissing(filepath.Join(targetRoot, "docs", "handoffs", "routing-matrix.md"), "# Handoff Routing Matrix\n\n| Handoff ID | From Phase | To Phase | Artifact Bundle Path | Receiver Role | Receiver Name | Ack Status | Ack Timestamp (UTC) | Ack Evidence Path |\n|---|---|---|---|---|---|---|---|---|\n| HO-001 | 01 | 02 | docs/handoffs/po/ | architect | <name> | PENDING |  |  |\n")
+	writeIfMissing(filepath.Join(targetRoot, "docs", "handoffs", "traceability-pack.md"), "# Handoff Traceability Pack - System\n\n## ID Inventory\n- REQ:\n- PLAN:\n- DIAG:\n- TEST:\n- DEF:\n- TC:\n\n## Mapping\n- REQ-xxx -> PLAN-xxx -> DIAG-xxx -> TEST-xxx/DEF-xxx\n\n## Planning Behavior\n- profile_id:\n- profile_source:\n- profile_version:\n- resolved_controls_snapshot:\n\n## Workflow Decisions Applied\n-\n\n## ADR Ledger\n| ADR ID | Title | Applied Scope | Approval Status |\n|---|---|---|---|\n| ADR-xxxx | <title> | <repo/system> | APPROVED/BLOCKED |\n\n## System Description\n-\n\n## Diagram Index\n- [DIAG-xxx] <name> -> <path>\n")
 	writeIfMissing(filepath.Join(targetRoot, "docs", "integration", "compose-mode-decision.md"), "# Compose Mode Decision\n\n- Compose mode: local-dev\n- Evidence paths:\n")
 	writeIfMissing(filepath.Join(targetRoot, "docs", "tooling", "skill-capability-gap.md"), "# Skill Capability Gap\n\nUse only when planning intent exceeds available skill/action capability.\n\n- Status: CLOSED\n")
 }
 
 func workspaceReadme() string {
-	return "# Multi-Repo Workspace\n\nThis folder contains scaffolded service repositories and a demo integration compose workspace.\n\n## Starter repositories\n- `go-module-service`\n- `go-application-service`\n- `ts-react-service`\n- `demo-compose`\n\nEach repository includes baseline docs structure (`docs/plans`, `docs/current-state`, `docs/diagrams`), plus `README.md` and `CHANGELOG.md`.\n"
+	return "# Multi-Repo Workspace\n\nThis folder contains scaffolded repositories and a demo integration compose workspace.\n\n## Starter repositories\n- `go-library-module`\n- `go-application-service`\n- `ts-react-service`\n- `demo-compose`\n\nEach repository includes baseline docs structure (`docs/plans`, `docs/current-state`, `docs/diagrams`, `docs/handoffs`), plus operational README and changelog templates.\n"
 }
 
 func docsReadme(repoName string) string {
@@ -169,7 +173,7 @@ func namingADRTemplate() string {
 		"   - Pattern: <product>-svc-<bounded-context>-<runtime>\n" +
 		"   - Examples:\n" +
 		"     - acme-svc-orders-go-app\n" +
-		"     - acme-svc-catalog-go-module\n\n" +
+		"     - acme-lib-catalog-go-module\n\n" +
 		"2. UI repositories\n" +
 		"   - Pattern: <product>-web-<bounded-context>-ts-react\n" +
 		"   - Example: acme-web-portal-ts-react\n\n" +
@@ -183,6 +187,10 @@ func namingADRTemplate() string {
 		"- Build and orchestration scripts can infer repo purpose from names.\n" +
 		"- Planning artifacts can map IDs to deterministic repo paths.\n" +
 		"- New service onboarding uses a consistent scaffold baseline.\n"
+}
+
+func repoReadmeTemplate(repoName string) string {
+	return fmt.Sprintf("# %s\n\n## Purpose\n- What this repo is responsible for.\n\n## Scope\n- In scope:\n- Out of scope:\n\n## Dependencies\n- Runtime dependencies (DB/cache/services)\n- Build/test toolchain\n\n## Runbook\n- Build:\n- Run:\n- Test:\n\n## Interfaces\n- API/contracts/events exposed and consumed.\n\n## Ownership\n- Team:\n- Primary owner:\n- Escalation:\n\n## Traceability\n- REQ IDs:\n- PLAN IDs:\n- DIAG IDs:\n- ADR IDs applied:\n\n## Plan-to-Implementation Summary\n- Plan intent:\n- Key implementation details delivered:\n- Deferred/not delivered:\n", repoName)
 }
 
 func printBlocked(message string) {

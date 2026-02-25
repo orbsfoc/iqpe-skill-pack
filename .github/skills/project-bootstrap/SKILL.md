@@ -22,7 +22,7 @@ Use deterministic MCP actions to initialize workflow execution:
 7. Continue with preflight checks before phase execution.
 
 Service workspace scaffold includes starter repositories:
-- `repos/go-module-service`
+- `repos/go-library-module`
 - `repos/go-application-service`
 - `repos/ts-react-service`
 - `repos/demo-compose`
@@ -33,6 +33,7 @@ Each starter repository is initialized with:
 - `docs/plans/`
 - `docs/current-state/`
 - `docs/diagrams/`
+- `docs/handoffs/`
 
 Automated context promotion action:
 - `mcp.action.context_promotion_publish`

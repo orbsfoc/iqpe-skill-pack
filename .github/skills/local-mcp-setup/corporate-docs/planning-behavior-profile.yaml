@@ -52,6 +52,9 @@ evidence:
 storage:
   strategy_required: true
   primary_system_of_record: relational-db
+  prefer_standard_interfaces: true
+  prefer_managed_service_reuse: true
+  custom_storage_requires_tradeoff_doc: true
   cache_policy_required: true
   object_storage_for_blobs_required: true
   search_index_for_discovery_allowed: true
@@ -70,3 +73,18 @@ production:
   upgrade_strategy_required: true
   zero_downtime_upgrades_required: true
   operability_slos_required: true
+
+service_module:
+  value_hypothesis_required: true
+  customer_outcome_link_required: true
+  lifecycle_maintenance_cost_assessment_required: true
+  build_vs_buy_balance_required: true
+  ownership_and_sunset_plan_required: true
+  necessity_evidence_required: true
+  unwarranted_service_creation_prohibited: true
+
+repo_strategy:
+  repo_action_plan_required: true
+  create_vs_update_decision_required: true
+  prefer_updating_existing_repo_when_boundary_fits: true
+  new_repo_requires_boundary_and_ownership_justification: true

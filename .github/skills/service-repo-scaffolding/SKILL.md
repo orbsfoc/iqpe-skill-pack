@@ -1,6 +1,6 @@
 ---
 name: service-repo-scaffolding
-description: Scaffold a multi-repo service workspace (Go module, Go app, TS/React app, demo compose) with baseline docs structure and naming ADR.
+description: Scaffold a multi-repo workspace (Go library module, Go app service, TS/React app service, demo compose) with baseline docs structure and naming ADR.
 argument-hint: [target_root] [workspace_dir(optional)]
 user-invokable: true
 disable-model-invocation: false
@@ -12,7 +12,7 @@ Use deterministic action:
 
 1. Run `mcp.action.scaffold_service_workspace` with `target_root`.
 2. Confirm `repos/` exists with starter repos:
-   - `go-module-service`
+   - `go-library-module`
    - `go-application-service`
    - `ts-react-service`
    - `demo-compose`
@@ -28,4 +28,5 @@ Expected baseline in each starter repo:
 - `docs/plans/`
 - `docs/current-state/`
 - `docs/diagrams/`
+- `docs/handoffs/`
 - `docs/tooling/go-bin-convention.md`
