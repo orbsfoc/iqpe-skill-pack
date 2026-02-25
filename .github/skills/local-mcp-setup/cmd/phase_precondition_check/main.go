@@ -43,6 +43,7 @@ func main() {
 		require("docs/tooling/workflow-preflight.json")
 		require("docs/tooling/spec-tech-detect.json")
 		require("docs/planning-behavior-resolution.md")
+		require("docs/plans/index.md")
 	case "02":
 		require("docs/requirements.md")
 		require("docs/repo-topology-decision.md")
@@ -51,11 +52,15 @@ func main() {
 	case "03":
 		require("docs/implementation-plan.md")
 		require("docs/technology-constraints.md")
+		require("docs/plans/planning-signoff.md")
 		require("docs/handoffs/architect/phase-gate.md")
 		if requiresOpenAPISpec(absRoot) {
 			if !hasOpenAPISpec(absRoot) {
 				missing = append(missing, "docs/openapi/*.yaml")
 			}
+		}
+		if !hasApprovedPlanningSignoff(absRoot) {
+			missing = append(missing, "docs/plans/planning-signoff.md (must include Approval Status: APPROVED)")
 		}
 	case "04":
 		require("docs/handoffs/dev/phase-gate.md")
@@ -242,6 +247,15 @@ func hasOpenAPISpec(root string) bool {
 		}
 	}
 	return false
+}
+
+func hasApprovedPlanningSignoff(root string) bool {
+	path := filepath.Join(root, "docs", "plans", "planning-signoff.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	return strings.Contains(strings.ToUpper(string(content)), "APPROVAL STATUS: APPROVED")
 }
 
 func printBlocked(phase string, missing []string) {

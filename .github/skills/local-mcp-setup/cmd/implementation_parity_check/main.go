@@ -105,6 +105,22 @@ func discoverImplementedAdapters(root string) []string {
 		filepath.Join(root, "pkg", "adapters"),
 	}
 
+	reposRoot := filepath.Join(root, "repos")
+	if repoEntries, repoErr := os.ReadDir(reposRoot); repoErr == nil {
+		for _, repoEntry := range repoEntries {
+			if !repoEntry.IsDir() {
+				continue
+			}
+			repoRoot := filepath.Join(reposRoot, repoEntry.Name())
+			candidateRoots = append(candidateRoots,
+				filepath.Join(repoRoot, "adapters"),
+				filepath.Join(repoRoot, "src", "adapters"),
+				filepath.Join(repoRoot, "internal", "adapters"),
+				filepath.Join(repoRoot, "pkg", "adapters"),
+			)
+		}
+	}
+
 	seen := map[string]bool{}
 	out := []string{}
 	for _, candidate := range candidateRoots {
