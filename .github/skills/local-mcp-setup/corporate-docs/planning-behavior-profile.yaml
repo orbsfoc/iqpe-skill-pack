@@ -48,3 +48,25 @@ evidence:
   planning_behavior_resolution_required: true
   mcp_usage_evidence_required: true
   ai_usage_metrics_required_when_available: true
+
+storage:
+  strategy_required: true
+  primary_system_of_record: relational-db
+  cache_policy_required: true
+  object_storage_for_blobs_required: true
+  search_index_for_discovery_allowed: true
+
+eventing:
+  async_eventing_policy: required-when-latency-insensitive-or-cross-service
+  delivery_semantics_default: at-least-once
+  ordering_scope_default: per-aggregate-key
+  schema_versioning_required: true
+  idempotent_consumers_required: true
+
+production:
+  scalability_budget_required: true
+  performance_slo_required: true
+  maintainability_controls_required: true
+  upgrade_strategy_required: true
+  zero_downtime_upgrades_required: true
+  operability_slos_required: true

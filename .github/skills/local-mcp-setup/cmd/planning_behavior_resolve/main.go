@@ -179,6 +179,22 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 - reviews.code_review_feedback_loop_required: %s
 - integration.orchestration_requires_all_prerequisites_passed: %s
 - evidence.ai_usage_metrics_required_when_available: %s
+- storage.strategy_required: %s
+- storage.primary_system_of_record: %s
+- storage.cache_policy_required: %s
+- storage.object_storage_for_blobs_required: %s
+- storage.search_index_for_discovery_allowed: %s
+- eventing.async_eventing_policy: %s
+- eventing.delivery_semantics_default: %s
+- eventing.ordering_scope_default: %s
+- eventing.schema_versioning_required: %s
+- eventing.idempotent_consumers_required: %s
+- production.scalability_budget_required: %s
+- production.performance_slo_required: %s
+- production.maintainability_controls_required: %s
+- production.upgrade_strategy_required: %s
+- production.zero_downtime_upgrades_required: %s
+- production.operability_slos_required: %s
 
 ## Notes
 - Values are resolved from the selected profile source for this run.
@@ -201,6 +217,22 @@ func buildReport(targetRoot, profilePath string, values map[string]string) strin
 		scalar(values, "reviews.code_review_feedback_loop_required"),
 		scalar(values, "integration.orchestration_requires_all_prerequisites_passed"),
 		scalar(values, "evidence.ai_usage_metrics_required_when_available"),
+		scalar(values, "storage.strategy_required"),
+		scalar(values, "storage.primary_system_of_record"),
+		scalar(values, "storage.cache_policy_required"),
+		scalar(values, "storage.object_storage_for_blobs_required"),
+		scalar(values, "storage.search_index_for_discovery_allowed"),
+		scalar(values, "eventing.async_eventing_policy"),
+		scalar(values, "eventing.delivery_semantics_default"),
+		scalar(values, "eventing.ordering_scope_default"),
+		scalar(values, "eventing.schema_versioning_required"),
+		scalar(values, "eventing.idempotent_consumers_required"),
+		scalar(values, "production.scalability_budget_required"),
+		scalar(values, "production.performance_slo_required"),
+		scalar(values, "production.maintainability_controls_required"),
+		scalar(values, "production.upgrade_strategy_required"),
+		scalar(values, "production.zero_downtime_upgrades_required"),
+		scalar(values, "production.operability_slos_required"),
 	)
 }
 
