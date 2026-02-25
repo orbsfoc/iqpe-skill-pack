@@ -68,12 +68,8 @@ func main() {
 	}
 
 	mkDir(workspacePath)
+	writeIfMissing(filepath.Join(workspacePath, ".gitkeep"), "")
 	writeIfMissing(filepath.Join(workspacePath, "README.md"), workspaceReadme())
-
-	scaffoldGoModule(workspacePath, mkDir, writeIfMissing)
-	scaffoldGoApp(workspacePath, mkDir, writeIfMissing)
-	scaffoldTsReact(workspacePath, mkDir, writeIfMissing)
-	scaffoldDemoCompose(workspacePath, mkDir, writeIfMissing)
 	scaffoldNamingADR(absRoot, writeIfMissing)
 	scaffoldRun5GovernanceArtifacts(absRoot, writeIfMissing)
 
@@ -155,7 +151,7 @@ func scaffoldRun5GovernanceArtifacts(targetRoot string, writeIfMissing func(stri
 }
 
 func workspaceReadme() string {
-	return "# Multi-Repo Workspace\n\nThis folder contains scaffolded repositories and a demo integration compose workspace.\n\n## Starter repositories\n- `go-library-module`\n- `go-application-service`\n- `ts-react-service`\n- `demo-compose`\n\nEach repository includes baseline docs structure (`docs/plans`, `docs/current-state`, `docs/diagrams`, `docs/handoffs`), plus operational README and changelog templates.\n"
+	return "# Multi-Repo Workspace\n\nThis folder is intentionally initialized as an empty workspace boundary.\n\n## Policy\n- Repositories are created or updated only from approved planning outcomes (`docs/plans/index.md`, `docs/plans/repo-change-plan.md`, `docs/plans/planning-signoff.md`).\n- Bootstrap/scaffold steps do not create service or integration repositories by default.\n\n## Expected workflow\n1. Product Owner and Architect produce approved planning artifacts.\n2. Repository create/update actions are executed from those approved decisions.\n3. Traceability maps each `PLAN-*` to target repository paths.\n"
 }
 
 func docsReadme(repoName string) string {
